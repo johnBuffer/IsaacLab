@@ -54,7 +54,7 @@ agent:
   rewards_shaper_scale: 1.0
   # logging and checkpoint
   experiment:
-    directory: "C:/Users/jeant/Code/NVidia/IsaacLab/cartpole_pezzza"
+    directory: "cartpole"
     experiment_name: ""
     write_interval: 12
     checkpoint_interval: 1000
