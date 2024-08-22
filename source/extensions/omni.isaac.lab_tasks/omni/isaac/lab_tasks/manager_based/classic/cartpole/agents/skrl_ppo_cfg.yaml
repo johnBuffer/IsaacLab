@@ -11,7 +11,7 @@ models:
     min_log_std: -20.0
     max_log_std: 2.0
     input_shape: "Shape.STATES"
-    hiddens: [32, 32]
+    hiddens: [128, 128]
     hidden_activation: ["elu", "elu"]
     output_shape: "Shape.ACTIONS"
     output_activation: "tanh"
@@ -19,7 +19,7 @@ models:
   value:  # see skrl.utils.model_instantiators.torch.deterministic_model for parameter details
     clip_actions: False
     input_shape: "Shape.STATES"
-    hiddens: [32, 32]
+    hiddens: [128, 128]
     hidden_activation: ["elu", "elu"]
     output_shape: "Shape.ONE"
     output_activation: ""
@@ -34,7 +34,7 @@ agent:
   mini_batches: 4
   discount_factor: 0.99
   lambda: 0.95
-  learning_rate: 1.e-3
+  learning_rate: 1.e-4
   learning_rate_scheduler: "KLAdaptiveLR"
   learning_rate_scheduler_kwargs:
     kl_threshold: 0.01
@@ -54,14 +54,14 @@ agent:
   rewards_shaper_scale: 1.0
   # logging and checkpoint
   experiment:
-    directory: "cartpole"
+    directory: "C:/Users/jeant/Code/NVidia/IsaacLab/cartpole_pezzza"
     experiment_name: ""
     write_interval: 12
-    checkpoint_interval: 120
+    checkpoint_interval: 1000
 
 
 # Sequential trainer
 # https://skrl.readthedocs.io/en/latest/api/trainers/sequential.html
 trainer:
-  timesteps: 2400
+  timesteps: 100000
   environment_info: "log"

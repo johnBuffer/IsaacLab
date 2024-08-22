@@ -72,7 +72,7 @@ class CommandsCfg:
 class ActionsCfg:
     """Action specifications for the MDP."""
 
-    joint_effort = mdp.JointEffortActionCfg(asset_name="robot", joint_names=["slider_to_cart"], scale=100.0)
+    joint_effort = mdp.JointEffortActionCfg(asset_name="robot", joint_names=["SliderToCart"], scale=50.0)
 
 
 @configclass
@@ -99,14 +99,20 @@ class ObservationsCfg:
 class EventCfg:
     """Configuration for events."""
 
+    reset_joints = EventTerm(
+        func=mdp.reset_joints_to_default,
+        mode="reset",
+        params={},
+    )
+
     # reset
     reset_cart_position = EventTerm(
         func=mdp.reset_joints_by_offset,
         mode="reset",
         params={
-            "asset_cfg": SceneEntityCfg("robot", joint_names=["slider_to_cart"]),
-            "position_range": (-1.0, 1.0),
-            "velocity_range": (-0.5, 0.5),
+            "asset_cfg": SceneEntityCfg("robot", joint_names=["SliderToCart"]),
+            "position_range": (0.0, 0.0),
+            "velocity_range": (0.0, 0.0),
         },
     )
 
@@ -114,9 +120,19 @@ class EventCfg:
         func=mdp.reset_joints_by_offset,
         mode="reset",
         params={
-            "asset_cfg": SceneEntityCfg("robot", joint_names=["cart_to_pole"]),
-            "position_range": (-0.25 * math.pi, 0.25 * math.pi),
-            "velocity_range": (-0.25 * math.pi, 0.25 * math.pi),
+            "asset_cfg": SceneEntityCfg("robot", joint_names=["CartToPole"]),
+            "position_range": (math.pi, math.pi),
+            "velocity_range": (0.0, 0.0),
+        },
+    )
+
+    reset_pole_double_position = EventTerm(
+        func=mdp.reset_joints_by_offset,
+        mode="reset",
+        params={
+            "asset_cfg": SceneEntityCfg("robot", joint_names=["PoleToDouble"]),
+            "position_range": (0.0, 0.0),
+            "velocity_range": (0.0, 0.0),
         },
     )
 
@@ -130,22 +146,27 @@ class RewardsCfg:
     # (2) Failure penalty
     terminating = RewTerm(func=mdp.is_terminated, weight=-2.0)
     # (3) Primary task: keep pole upright
-    pole_pos = RewTerm(
+    pole_pos_1 = RewTerm(
+        func=mdp.joint_pos_target_l2,
+        weight=-4.0,
+        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["CartToPole"]), "target": 0.0},
+    )
+    pole_pos_2 = RewTerm(
         func=mdp.joint_pos_target_l2,
         weight=-1.0,
-        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["cart_to_pole"]), "target": 0.0},
+        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["PoleToDouble"]), "target": 0.0},
     )
     # (4) Shaping tasks: lower cart velocity
     cart_vel = RewTerm(
         func=mdp.joint_vel_l1,
         weight=-0.01,
-        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["slider_to_cart"])},
+        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["SliderToCart"])},
     )
     # (5) Shaping tasks: lower pole angular velocity
     pole_vel = RewTerm(
         func=mdp.joint_vel_l1,
         weight=-0.005,
-        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["cart_to_pole"])},
+        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["CartToPole"])},
     )
 
 
@@ -158,7 +179,7 @@ class TerminationsCfg:
     # (2) Cart out of bounds
     cart_out_of_bounds = DoneTerm(
         func=mdp.joint_pos_out_of_manual_limit,
-        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["slider_to_cart"]), "bounds": (-3.0, 3.0)},
+        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["SliderToCart"]), "bounds": (-1.45, 1.45)},
     )
 
 
@@ -179,7 +200,7 @@ class CartpoleEnvCfg(ManagerBasedRLEnvCfg):
     """Configuration for the locomotion velocity-tracking environment."""
 
     # Scene settings
-    scene: CartpoleSceneCfg = CartpoleSceneCfg(num_envs=4096, env_spacing=4.0)
+    scene: CartpoleSceneCfg = CartpoleSceneCfg(num_envs=4096, env_spacing=3.2)
     # Basic settings
     observations: ObservationsCfg = ObservationsCfg()
     actions: ActionsCfg = ActionsCfg()
@@ -202,3 +223,4 @@ class CartpoleEnvCfg(ManagerBasedRLEnvCfg):
         # simulation settings
         self.sim.dt = 1 / 120
         self.sim.render_interval = self.decimation
+        self.sim.gravity = (0.0, 0.0, 0.0)

@@ -97,8 +97,9 @@ def run_simulator(sim: sim_utils.SimulationContext, entities: dict[str, RigidObj
             count = 0
             # reset root state
             root_state = cone_object.data.default_root_state.clone()
+            print(root_state)
             # sample a random position on a cylinder around the origins
-            root_state[:, :3] += origins
+            #root_state[:, :3] += origins
             root_state[:, :3] += math_utils.sample_cylinder(
                 radius=0.1, h_range=(0.25, 0.5), size=cone_object.num_instances, device=cone_object.device
             )

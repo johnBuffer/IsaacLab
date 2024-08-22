@@ -787,13 +787,38 @@ def reset_joints_by_scale(
     asset.write_joint_state_to_sim(joint_pos, joint_vel, env_ids=env_ids)
 
 
+def reset_joints_to_default(
+    env: ManagerBasedEnv,
+    env_ids: torch.Tensor,
+    asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
+):
+    """Reset the robot joints with to their offset values"""
+    # extract the used quantities (to enable type-hinting)
+    asset: Articulation = env.scene[asset_cfg.name]
+
+    # get default joint state
+    joint_pos = asset.data.default_joint_pos[env_ids].clone()
+    joint_vel = asset.data.default_joint_vel[env_ids].clone()
+
+    # This shouldn't be needed as default joint states should be valid, but just in case
+    # clamp joint pos to limits
+    joint_pos_limits = asset.data.soft_joint_pos_limits[env_ids]
+    joint_pos = joint_pos.clamp_(joint_pos_limits[..., 0], joint_pos_limits[..., 1])
+    # clamp joint vel to limits
+    joint_vel_limits = asset.data.soft_joint_vel_limits[env_ids]
+    joint_vel = joint_vel.clamp_(-joint_vel_limits, joint_vel_limits)
+
+    # set into the physics simulation
+    asset.write_joint_state_to_sim(joint_pos, joint_vel, env_ids=env_ids)
+
+
 def reset_joints_by_offset(
     env: ManagerBasedEnv,
     env_ids: torch.Tensor,
     position_range: tuple[float, float],
     velocity_range: tuple[float, float],
     asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
-):
+):    
     """Reset the robot joints with offsets around the default position and velocity by the given ranges.
 
     This function samples random values from the given ranges and biases the default joint positions and velocities
@@ -803,11 +828,11 @@ def reset_joints_by_offset(
     asset: Articulation = env.scene[asset_cfg.name]
 
     # get default joint state
-    joint_pos = asset.data.default_joint_pos[env_ids].clone()
-    joint_vel = asset.data.default_joint_vel[env_ids].clone()
+    joint_pos = asset.data.joint_pos[env_ids].clone()
+    joint_vel = asset.data.joint_vel[env_ids].clone()
 
     # bias these values randomly
-    joint_pos += math_utils.sample_uniform(*position_range, joint_pos.shape, joint_pos.device)
+    joint_pos[:, asset_cfg.joint_ids] += math_utils.sample_uniform(*position_range, joint_pos[:, asset_cfg.joint_ids].shape, joint_pos.device)
     joint_vel += math_utils.sample_uniform(*velocity_range, joint_vel.shape, joint_vel.device)
 
     # clamp joint pos to limits

@@ -152,8 +152,6 @@ def main():
             joint_efforts = torch.randn_like(env.action_manager.action)
             # step the environment
             obs, _ = env.step(joint_efforts)
-            # print current orientation of pole
-            print("[Env 0]: Pole joint: ", obs["policy"][0][1].item())
             # update counter
             count += 1
 

@@ -70,9 +70,13 @@ def design_scene():
         collision_props=sim_utils.CollisionPropertiesCfg(),
         visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 1.0, 0.0)),
     )
-    cfg_cone_rigid.func(
-        "/World/Objects/ConeRigid", cfg_cone_rigid, translation=(0.0, 0.0, 2.0), orientation=(0.5, 0.0, 0.5, 0.0)
-    )
+
+    for x in range(10):
+        for z in range(1000):
+            cfg_cone_rigid.func(
+                f"/World/Objects/ConeRigid_{x}_{z}", cfg_cone_rigid, translation=(x, 0.0, z), orientation=(0.5, 0.0, 0.5, 0.0)
+            )
+        print(f'{x}/1000')
 
     # spawn a blue cuboid with deformable body
     cfg_cuboid_deformable = sim_utils.MeshCuboidCfg(
@@ -105,10 +109,27 @@ def main():
     # Now we are ready!
     print("[INFO]: Setup complete...")
 
+    cfg_cone_rigid = sim_utils.ConeCfg(
+        radius=0.15,
+        height=0.5,
+        rigid_props=sim_utils.RigidBodyPropertiesCfg(),
+        mass_props=sim_utils.MassPropertiesCfg(mass=1.0),
+        collision_props=sim_utils.CollisionPropertiesCfg(),
+        visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 1.0, 0.0)),
+    )
+
+    i = 0
     # Simulate physics
     while simulation_app.is_running():
         # perform step
         sim.step()
+
+        if i % 10 == 0 and False:
+            cfg_cone_rigid.func(
+                f"/World/Objects/ConeRigid_{i}", cfg_cone_rigid, translation=(0.0, 0.0, 2.0), orientation=(0.5, 0.0, 0.5, 0.0)
+            )
+        
+        i += 1
 
 
 if __name__ == "__main__":

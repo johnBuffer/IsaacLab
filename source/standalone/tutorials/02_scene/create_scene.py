@@ -73,24 +73,6 @@ def run_simulator(sim: sim_utils.SimulationContext, scene: InteractiveScene):
     count = 0
     # Simulation loop
     while simulation_app.is_running():
-        # Reset
-        if count % 500 == 0:
-            # reset counter
-            count = 0
-            # reset the scene entities
-            # root state
-            # we offset the root state by the origin since the states are written in simulation world frame
-            # if this is not done, then the robots will be spawned at the (0, 0, 0) of the simulation world
-            root_state = robot.data.default_root_state.clone()
-            root_state[:, :3] += scene.env_origins
-            robot.write_root_state_to_sim(root_state)
-            # set joint positions with some noise
-            joint_pos, joint_vel = robot.data.default_joint_pos.clone(), robot.data.default_joint_vel.clone()
-            joint_pos += torch.rand_like(joint_pos) * 0.1
-            robot.write_joint_state_to_sim(joint_pos, joint_vel)
-            # clear internal buffers
-            scene.reset()
-            print("[INFO]: Resetting robot state...")
         # Apply random action
         # -- generate random joint efforts
         efforts = torch.randn_like(robot.data.joint_pos) * 5.0

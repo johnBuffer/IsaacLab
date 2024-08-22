@@ -8,6 +8,7 @@
 """Launch Isaac Sim Simulator first."""
 
 import argparse
+import time
 
 from omni.isaac.lab.app import AppLauncher
 
@@ -31,6 +32,9 @@ import torch
 from omni.isaac.lab.envs import ManagerBasedRLEnv
 
 from omni.isaac.lab_tasks.manager_based.classic.cartpole.cartpole_env_cfg import CartpoleEnvCfg
+import omni.isaac.lab_tasks.manager_based.classic.cartpole.mdp as mdp
+from omni.isaac.lab.managers import SceneEntityCfg
+from omni.isaac.lab.utils.math import wrap_to_pi
 
 
 def main():
@@ -46,17 +50,24 @@ def main():
     while simulation_app.is_running():
         with torch.inference_mode():
             # reset
-            if count % 300 == 0:
+            if count % 100 == 0:
                 count = 0
                 env.reset()
                 print("-" * 80)
                 print("[INFO]: Resetting environment...")
             # sample random actions
             joint_efforts = torch.randn_like(env.action_manager.action)
+
+            asset_cfg = SceneEntityCfg("robot", joint_names=["CartToPole", "PoleToDouble"])
+            asset_cfg.resolve(env.scene)
+            asset = env.scene["robot"]
+            angle = asset.data.joint_pos[:, asset_cfg.joint_ids]
+            #print("Obs main: ", angle, "wrap", wrap_to_pi(angle))
+
             # step the environment
             obs, rew, terminated, truncated, info = env.step(joint_efforts)
             # print current orientation of pole
-            print("[Env 0]: Pole joint: ", obs["policy"][0][1].item())
+
             # update counter
             count += 1
 
