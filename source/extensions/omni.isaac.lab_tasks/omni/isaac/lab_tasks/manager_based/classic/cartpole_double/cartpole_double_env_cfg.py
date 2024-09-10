@@ -72,7 +72,7 @@ class CommandsCfg:
 class ActionsCfg:
     """Action specifications for the MDP."""
 
-    joint_effort = mdp.JointEffortActionCfg(asset_name="robot", joint_names=["slider_to_cart"], scale=30.0)
+    joint_effort = mdp.JointEffortActionCfg(asset_name="robot", joint_names=["slider_to_cart"], scale=50.0)
 
 
 @configclass
@@ -122,7 +122,9 @@ class EventCfg:
         mode="reset",
         params={
             "asset_cfg": SceneEntityCfg("robot", joint_names=["cart_to_pole"]),
-            "position_range": (-math.pi * 0.1, math.pi * 0.1),
+            #"position_range": (-math.pi * 0.25, math.pi * 0.25),
+            #"position_range": (-math.pi, math.pi),
+            "position_range": (math.pi, math.pi),
             "velocity_range": (0.0, 0.0),
         },
     )
@@ -135,22 +137,22 @@ class RewardsCfg:
     # (1) Constant running reward
     alive = RewTerm(func=mdp.is_alive, weight=1.0)
     # (2) Failure penalty
-    terminating = RewTerm(func=mdp.is_terminated, weight=-8.0)
+    terminating = RewTerm(func=mdp.is_terminated, weight=-800.0)
     # (3) Primary task: keep pole upright
     pole_pos = RewTerm(
         func=mdp.joint_pos_target_l2,
-        weight=-2.0,
+        weight=-10.0,
         params={"asset_cfg": SceneEntityCfg("robot", joint_names=["cart_to_pole"]), "target": 0.0},
     )
     pole_pos_double = RewTerm(
         func=mdp.joint_pos_target_l2,
-        weight=-2.0,
+        weight=-10.0,
         params={"asset_cfg": SceneEntityCfg("robot", joint_names=["pole_to_double"]), "target": 0.0},
     )
     # (4) Shaping tasks: lower cart velocity
     cart_vel = RewTerm(
         func=mdp.joint_vel_l1,
-        weight=-0.01,
+        weight=-0.5,
         params={"asset_cfg": SceneEntityCfg("robot", joint_names=["slider_to_cart"])},
     )
     # (5) Shaping tasks: lower pole angular velocity
@@ -214,10 +216,10 @@ class CartpoleDoubleEnvCfg(ManagerBasedRLEnvCfg):
         """Post initialization."""
         # general settings
         self.decimation = 1
-        self.episode_length_s = 20
+        self.episode_length_s = 5
         # viewer settings
         self.viewer.eye = (8.0, 0.0, 5.0)
         # simulation settings
         self.sim.dt = 1 / 60
-        self.sim.gravity = (0.0, 0.0, -5.0)
+        self.sim.gravity = (0.0, 0.0, -2.0)
         self.sim.render_interval = 1
