@@ -48,7 +48,7 @@ import numpy as np
 import os
 from datetime import datetime
 
-from stable_baselines3 import PPO
+from stable_baselines3 import PPO, TD3, SAC
 from stable_baselines3.common.callbacks import CheckpointCallback
 from stable_baselines3.common.logger import configure
 from stable_baselines3.common.vec_env import VecNormalize

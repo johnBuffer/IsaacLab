@@ -72,7 +72,7 @@ class CommandsCfg:
 class ActionsCfg:
     """Action specifications for the MDP."""
 
-    joint_effort = mdp.JointEffortActionCfg(asset_name="robot", joint_names=["slider_to_cart"], scale=100.0)
+    joint_effort = mdp.JointEffortActionCfg(asset_name="robot", joint_names=["slider_to_cart"], scale=30.0)
 
 
 @configclass
@@ -98,9 +98,16 @@ class ObservationsCfg:
 @configclass
 class EventCfg:
     """Configuration for events."""
+    reset_to_default = EventTerm(
+        func=mdp.reset_joints_to_default,
+        mode="reset",
+        params={
+            "asset_cfg": SceneEntityCfg("robot"),
+        },
+    )
 
     # reset
-    reset_cart_position = EventTerm(
+    """reset_cart_position = EventTerm(
         func=mdp.reset_joints_by_offset,
         mode="reset",
         params={
@@ -108,15 +115,15 @@ class EventCfg:
             "position_range": (-1.0, 1.0),
             "velocity_range": (-0.5, 0.5),
         },
-    )
+    )"""
 
     reset_pole_position = EventTerm(
         func=mdp.reset_joints_by_offset,
         mode="reset",
         params={
             "asset_cfg": SceneEntityCfg("robot", joint_names=["cart_to_pole"]),
-            "position_range": (-0.25 * math.pi, 0.25 * math.pi),
-            "velocity_range": (-0.25 * math.pi, 0.25 * math.pi),
+            "position_range": (-math.pi * 0.1, math.pi * 0.1),
+            "velocity_range": (0.0, 0.0),
         },
     )
 
@@ -128,16 +135,16 @@ class RewardsCfg:
     # (1) Constant running reward
     alive = RewTerm(func=mdp.is_alive, weight=1.0)
     # (2) Failure penalty
-    terminating = RewTerm(func=mdp.is_terminated, weight=-2.0)
+    terminating = RewTerm(func=mdp.is_terminated, weight=-8.0)
     # (3) Primary task: keep pole upright
     pole_pos = RewTerm(
         func=mdp.joint_pos_target_l2,
-        weight=-1.0,
+        weight=-2.0,
         params={"asset_cfg": SceneEntityCfg("robot", joint_names=["cart_to_pole"]), "target": 0.0},
     )
-    pole_pos = RewTerm(
+    pole_pos_double = RewTerm(
         func=mdp.joint_pos_target_l2,
-        weight=-1.0,
+        weight=-2.0,
         params={"asset_cfg": SceneEntityCfg("robot", joint_names=["pole_to_double"]), "target": 0.0},
     )
     # (4) Shaping tasks: lower cart velocity
@@ -152,6 +159,12 @@ class RewardsCfg:
         weight=-0.005,
         params={"asset_cfg": SceneEntityCfg("robot", joint_names=["cart_to_pole"])},
     )
+    # (6) Shaping tasks: center cart
+    cart_pos = RewTerm(
+        func=mdp.joint_pos_target_l2,
+        weight=-0.5,
+        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["slider_to_cart"]), "target": 0.0},
+    )
 
 
 @configclass
@@ -163,7 +176,7 @@ class TerminationsCfg:
     # (2) Cart out of bounds
     cart_out_of_bounds = DoneTerm(
         func=mdp.joint_pos_out_of_manual_limit,
-        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["slider_to_cart"]), "bounds": (-2.9, 2.0)},
+        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["slider_to_cart"]), "bounds": (-1.9, 1.9)},
     )
 
 
@@ -184,7 +197,7 @@ class CartpoleDoubleEnvCfg(ManagerBasedRLEnvCfg):
     """Configuration for the locomotion velocity-tracking environment."""
 
     # Scene settings
-    scene: CartpoleSceneCfg = CartpoleSceneCfg(num_envs=4096, env_spacing=4.0)
+    scene: CartpoleSceneCfg = CartpoleSceneCfg(num_envs=4096, env_spacing=6.0)
     # Basic settings
     observations: ObservationsCfg = ObservationsCfg()
     actions: ActionsCfg = ActionsCfg()
@@ -201,10 +214,10 @@ class CartpoleDoubleEnvCfg(ManagerBasedRLEnvCfg):
         """Post initialization."""
         # general settings
         self.decimation = 1
-        self.episode_length_s = 5
+        self.episode_length_s = 20
         # viewer settings
         self.viewer.eye = (8.0, 0.0, 5.0)
         # simulation settings
-        self.sim.dt = 1 / 120
-        self.sim.gravity = (0.0, 0.0, 2.0)
-        self.sim.render_interval = 2
+        self.sim.dt = 1 / 60
+        self.sim.gravity = (0.0, 0.0, -5.0)
+        self.sim.render_interval = 1
