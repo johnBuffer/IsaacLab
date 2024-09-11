@@ -72,7 +72,7 @@ class CommandsCfg:
 class ActionsCfg:
     """Action specifications for the MDP."""
 
-    joint_effort = mdp.JointEffortActionCfg(asset_name="robot", joint_names=["slider_to_cart"], scale=50.0)
+    joint_effort = mdp.JointEffortActionCfg(asset_name="robot", joint_names=["slider_to_cart"], scale=3.0)
 
 
 @configclass
@@ -129,13 +129,25 @@ class EventCfg:
         },
     )
 
+    reset_pole_double_position = EventTerm(
+        func=mdp.reset_joints_by_offset,
+        mode="reset",
+        params={
+            "asset_cfg": SceneEntityCfg("robot", joint_names=["pole_to_double"]),
+            #"position_range": (-math.pi * 0.25, math.pi * 0.25),
+            #"position_range": (-math.pi, math.pi),
+            "position_range": (0.0, 0.0),
+            "velocity_range": (0.0, 0.0),
+        },
+    )
+
 
 @configclass
 class RewardsCfg:
     """Reward terms for the MDP."""
 
     # (1) Constant running reward
-    alive = RewTerm(func=mdp.is_alive, weight=1.0)
+    alive = RewTerm(func=mdp.is_alive, weight=100.0)
     # (2) Failure penalty
     terminating = RewTerm(func=mdp.is_terminated, weight=-800.0)
     # (3) Primary task: keep pole upright
