@@ -15,14 +15,14 @@ from omni.isaac.lab_tasks.utils.wrappers.rsl_rl import (
 @configclass
 class CartpolePPORunnerCfg(RslRlOnPolicyRunnerCfg):
     num_steps_per_env = 16
-    max_iterations = 15000
+    max_iterations = 5000
     save_interval = 50
     experiment_name = "cartpole"
     empirical_normalization = False
     policy = RslRlPpoActorCriticCfg(
         init_noise_std=1.0,
-        actor_hidden_dims=[128, 128, 128, 128],
-        critic_hidden_dims=[128, 128, 128, 128],
+        actor_hidden_dims=[512, 512, 512, 512, 512],
+        critic_hidden_dims=[512, 512, 512, 512, 512],
         activation="elu",
     )
     algorithm = RslRlPpoAlgorithmCfg(
@@ -32,7 +32,7 @@ class CartpolePPORunnerCfg(RslRlOnPolicyRunnerCfg):
         entropy_coef=0.025,
         num_learning_epochs=5,
         num_mini_batches=8,
-        learning_rate=1.0e-5,
+        learning_rate=1.0e-6,
         schedule="adaptive",
         gamma=0.99,
         lam=0.95,
