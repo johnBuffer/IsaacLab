@@ -135,8 +135,7 @@ class EventCfg:
         params={
             "asset_cfg": SceneEntityCfg("robot", joint_names=["pole_to_double"]),
             #"position_range": (-math.pi * 0.25, math.pi * 0.25),
-            #"position_range": (-math.pi, math.pi),
-            "position_range": (0.0, 0.0),
+            "position_range": (math.pi / 2, math.pi / 2),
             "velocity_range": (0.0, 0.0),
         },
     )

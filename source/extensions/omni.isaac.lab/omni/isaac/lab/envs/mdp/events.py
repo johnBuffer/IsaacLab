@@ -799,10 +799,11 @@ def reset_joints_by_offset(
     # extract the used quantities (to enable type-hinting)
     asset: Articulation = env.scene[asset_cfg.name]
 
-    # get default joint state
-    joint_pos_all = asset.data.joint_pos[env_ids].clone()
-    joint_vel_all = asset.data.joint_vel[env_ids].clone()
+    # get current joint state
+    joint_pos_all = asset.data.joint_pos[env_ids]
+    joint_vel_all = asset.data.joint_vel[env_ids]
 
+    # fetch targeted joints
     joint_pos = joint_pos_all[:, asset_cfg.joint_ids]
     joint_vel = joint_vel_all[:, asset_cfg.joint_ids]
 
@@ -810,6 +811,7 @@ def reset_joints_by_offset(
     joint_pos += math_utils.sample_uniform(*position_range, joint_pos.shape, joint_pos.device)
     joint_vel += math_utils.sample_uniform(*velocity_range, joint_vel.shape, joint_vel.device)
 
+    # update joint state
     joint_pos_all[:, asset_cfg.joint_ids] = joint_pos
     joint_vel_all[:, asset_cfg.joint_ids] = joint_vel
 
