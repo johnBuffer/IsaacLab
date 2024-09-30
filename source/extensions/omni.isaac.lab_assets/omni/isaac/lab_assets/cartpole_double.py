@@ -17,7 +17,7 @@ from omni.isaac.lab.utils.assets import ISAACLAB_NUCLEUS_DIR
 
 CARTPOLE_CFG = ArticulationCfg(
     spawn=sim_utils.UsdFileCfg(
-        usd_path="C:/Users/jeant/Documents/Pezzza/NVidia/Isaac/models/cart_mat_4.usdc",
+        usd_path="C:/Users/jeant/Documents/Pezzza/NVidia/Isaac/models/cart_mat_5.usdc",
         rigid_props=sim_utils.RigidBodyPropertiesCfg(
             rigid_body_enabled=True,
             max_linear_velocity=1000.0,
@@ -34,7 +34,7 @@ CARTPOLE_CFG = ArticulationCfg(
         ),
     ),
     init_state=ArticulationCfg.InitialStateCfg(
-        pos=(0.0, 0.0, 2.0), joint_pos={"RailToCart": 0.0, "CartToPole": 0.0}
+        pos=(0.0, 0.0, 2.0), joint_pos={"RailToCart": 0.0, "CartToPole": 0.0, "PoleToDouble": 0.0}
     ),
     actuators={
         "cart_actuator": ImplicitActuatorCfg(

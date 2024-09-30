@@ -21,18 +21,18 @@ class CartpolePPORunnerCfg(RslRlOnPolicyRunnerCfg):
     empirical_normalization = False
     policy = RslRlPpoActorCriticCfg(
         init_noise_std=1.0,
-        actor_hidden_dims=[128, 128, 128, 128],
-        critic_hidden_dims=[128, 128, 128, 128],
+        actor_hidden_dims=[256, 256, 256, 256],
+        critic_hidden_dims=[256, 256, 256, 256],
         activation="elu",
     )
     algorithm = RslRlPpoAlgorithmCfg(
         value_loss_coef=1.0,
         use_clipped_value_loss=True,
         clip_param=0.2,
-        entropy_coef=0.05,
+        entropy_coef=0.01,
         num_learning_epochs=3,
         num_mini_batches=6,
-        learning_rate=1.5e-5,
+        learning_rate=1.0e-5,
         schedule="adaptive",
         gamma=0.99,
         lam=0.95,

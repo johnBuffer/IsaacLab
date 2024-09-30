@@ -115,7 +115,7 @@ class CommandsCfg:
 class ActionsCfg:
     """Action specifications for the MDP."""
 
-    joint_effort = mdp.JointEffortActionCfg(asset_name="robot", joint_names=["RailToCart"], scale=50.0)
+    joint_effort = mdp.JointEffortActionCfg(asset_name="robot", joint_names=["RailToCart"], scale=10.0)
 
 
 @configclass
@@ -167,8 +167,8 @@ class EventCfg:
             "asset_cfg": SceneEntityCfg("robot", joint_names=["CartToPole"]),
             #"position_range": (-math.pi * 0.25, math.pi * 0.25),
             #"position_range": (-math.pi, math.pi),
-            #"position_range": (math.pi, math.pi),
-            "position_range": (0.0, 0.0),
+            "position_range": (math.pi, math.pi),
+            #"position_range": (0.0, 0.0),
             "velocity_range": (0.0, 0.0),
         },
     )
@@ -191,18 +191,18 @@ class RewardsCfg:
     """Reward terms for the MDP."""
 
     # (1) Constant running reward
-    alive = RewTerm(func=mdp.is_alive, weight=200.0)
+    alive = RewTerm(func=mdp.is_alive, weight=250.0)
     # (2) Failure penalty
     terminating = RewTerm(func=mdp.is_terminated, weight=-800.0)
     # (3) Primary task: keep pole upright
     pole_pos = RewTerm(
         func=mdp.joint_pos_target_l2,
-        weight=-20.0,
-        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["CartToPole"]), "target": math.pi},
+        weight=-30.0,
+        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["CartToPole"]), "target": 0.0},
     )
     pole_pos_double = RewTerm(
         func=mdp.joint_pos_target_l2,
-        weight=-20.0,
+        weight=-30.0,
         params={"asset_cfg": SceneEntityCfg("robot", joint_names=["PoleToDouble"]), "target": 0.0},
     )
     # (4) Shaping tasks: lower cart velocity
@@ -214,7 +214,7 @@ class RewardsCfg:
     # (5) Shaping tasks: lower pole angular velocity
     pole_vel = RewTerm(
         func=mdp.joint_vel_l1,
-        weight=-5.0,
+        weight=-10.0,
         params={"asset_cfg": SceneEntityCfg("robot", joint_names=["CartToPole"])},
     )
     # (6) Shaping tasks: center cart
