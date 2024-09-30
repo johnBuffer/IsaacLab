@@ -28,17 +28,44 @@ from omni.isaac.lab_assets.cartpole_double import CARTPOLE_CFG  # isort:skip
 ##
 # Scene definition
 ##
+#import omni.replicator.core as rep
+from omni.isaac.lab.sensors.camera import Camera, CameraCfg
+import omni.isaac.core.utils.prims as prim_utils
+
+
+def create_camera():
+    """Defines the camera sensor to add to the scene."""
+
+    # Setup camera sensor
+    # In contrast to the ray-cast camera, we spawn the prim at these locations.
+    # This means the camera sensor will be attached to these prims.
+    prim_utils.create_prim("/World/Origin_00", "Xform")
+    prim_utils.create_prim("/World/Origin_01", "Xform")
+    camera_cfg = CameraCfg(
+        prim_path="/World/Origin_.*/CameraSensor",
+        update_period=0,
+        height=480,
+        width=640,
+        data_types=[
+            "rgb"
+        ],
+        colorize_semantic_segmentation=False,
+        colorize_instance_id_segmentation=False,
+        colorize_instance_segmentation=False,
+        spawn=sim_utils.PinholeCameraCfg(
+            focal_length=24.0, focus_distance=400.0, horizontal_aperture=20.955, clipping_range=(0.1, 1.0e5)
+        ),
+    )
+
+    # Create camera
+    camera = Camera(cfg=camera_cfg)
+
+    return camera
 
 
 @configclass
-class CartpoleSceneCfg(InteractiveSceneCfg):
+class CartpoleDoubleSceneCfg(InteractiveSceneCfg):
     """Configuration for a cart-pole scene."""
-
-    # ground plane
-    ground = AssetBaseCfg(
-        prim_path="/World/ground",
-        spawn=sim_utils.GroundPlaneCfg(color=(0.9, 0.9, 0.9), size=(1000.0, 1000.0)),
-    )
 
     # cartpole
     robot: ArticulationCfg = CARTPOLE_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
@@ -54,6 +81,22 @@ class CartpoleSceneCfg(InteractiveSceneCfg):
         init_state=AssetBaseCfg.InitialStateCfg(rot=(0.738, 0.477, 0.477, 0.0)),
     )
 
+    """lol = CameraCfg(
+        prim_path="/Recording/Camera",
+        update_period=0,
+        height=480,
+        width=640,
+        data_types=[
+            "rgb",
+        ],
+        colorize_semantic_segmentation=False,
+        colorize_instance_id_segmentation=False,
+        colorize_instance_segmentation=False,
+        offset=CameraCfg.OffsetCfg(pos=(0.0, 0.0, 0.0)),
+        spawn=sim_utils.PinholeCameraCfg(
+            focal_length=24.0, focus_distance=400.0, horizontal_aperture=20.955, clipping_range=(0.1, 1.0e5)
+        )
+    )"""
 
 ##
 # MDP settings
@@ -72,7 +115,7 @@ class CommandsCfg:
 class ActionsCfg:
     """Action specifications for the MDP."""
 
-    joint_effort = mdp.JointEffortActionCfg(asset_name="robot", joint_names=["slider_to_cart"], scale=20.0)
+    joint_effort = mdp.JointEffortActionCfg(asset_name="robot", joint_names=["RailToCart"], scale=50.0)
 
 
 @configclass
@@ -111,7 +154,7 @@ class EventCfg:
         func=mdp.reset_joints_by_offset,
         mode="reset",
         params={
-            "asset_cfg": SceneEntityCfg("robot", joint_names=["slider_to_cart"]),
+            "asset_cfg": SceneEntityCfg("robot", joint_names=["RailToCart"]),
             "position_range": (-1.0, 1.0),
             "velocity_range": (-0.5, 0.5),
         },
@@ -121,10 +164,11 @@ class EventCfg:
         func=mdp.reset_joints_by_offset,
         mode="reset",
         params={
-            "asset_cfg": SceneEntityCfg("robot", joint_names=["cart_to_pole"]),
+            "asset_cfg": SceneEntityCfg("robot", joint_names=["CartToPole"]),
             #"position_range": (-math.pi * 0.25, math.pi * 0.25),
             #"position_range": (-math.pi, math.pi),
-            "position_range": (math.pi, math.pi),
+            #"position_range": (math.pi, math.pi),
+            "position_range": (0.0, 0.0),
             "velocity_range": (0.0, 0.0),
         },
     )
@@ -133,7 +177,7 @@ class EventCfg:
         func=mdp.reset_joints_by_offset,
         mode="reset",
         params={
-            "asset_cfg": SceneEntityCfg("robot", joint_names=["pole_to_double"]),
+            "asset_cfg": SceneEntityCfg("robot", joint_names=["PoleToDouble"]),
             #"position_range": (-math.pi * 0.25, math.pi * 0.25),
             #"position_range": (math.pi / 2, math.pi / 2),
             "position_range": (0.0, 0.0),
@@ -154,30 +198,30 @@ class RewardsCfg:
     pole_pos = RewTerm(
         func=mdp.joint_pos_target_l2,
         weight=-20.0,
-        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["cart_to_pole"]), "target": 0.0},
+        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["CartToPole"]), "target": math.pi},
     )
     pole_pos_double = RewTerm(
         func=mdp.joint_pos_target_l2,
         weight=-20.0,
-        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["pole_to_double"]), "target": 0.0},
+        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["PoleToDouble"]), "target": 0.0},
     )
     # (4) Shaping tasks: lower cart velocity
     cart_vel = RewTerm(
         func=mdp.joint_vel_l1,
         weight=-10.0,
-        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["slider_to_cart"])},
+        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["RailToCart"])},
     )
     # (5) Shaping tasks: lower pole angular velocity
     pole_vel = RewTerm(
         func=mdp.joint_vel_l1,
         weight=-5.0,
-        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["cart_to_pole"])},
+        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["CartToPole"])},
     )
     # (6) Shaping tasks: center cart
     cart_pos = RewTerm(
         func=mdp.joint_pos_target_l2,
         weight=-5.0,
-        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["slider_to_cart"]), "target": 0.0},
+        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["RailToCart"]), "target": 0.0},
     )
 
 
@@ -190,7 +234,7 @@ class TerminationsCfg:
     # (2) Cart out of bounds
     cart_out_of_bounds = DoneTerm(
         func=mdp.joint_pos_out_of_manual_limit,
-        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["slider_to_cart"]), "bounds": (-1.24, 1.24)},
+        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["RailToCart"]), "bounds": (-1.24, 1.24)},
     )
 
 
@@ -211,7 +255,7 @@ class CartpoleDoubleEnvCfg(ManagerBasedRLEnvCfg):
     """Configuration for the locomotion velocity-tracking environment."""
 
     # Scene settings
-    scene: CartpoleSceneCfg = CartpoleSceneCfg(num_envs=4096, env_spacing=2.8)
+    scene: CartpoleDoubleSceneCfg = CartpoleDoubleSceneCfg(num_envs=4096, env_spacing=2.8)
     # Basic settings
     observations: ObservationsCfg = ObservationsCfg()
     actions: ActionsCfg = ActionsCfg()
@@ -230,8 +274,10 @@ class CartpoleDoubleEnvCfg(ManagerBasedRLEnvCfg):
         self.decimation = 1
         self.episode_length_s = 10
         # viewer settings
-        self.viewer.eye = (8.0, 0.0, 3.0)
+        self.viewer.eye = (1.4, 0.0, 2.8)
+        self.viewer.lookat = (-10.0, 0.0, 0.0)
         # simulation settings
         self.sim.dt = 1 / 120
         self.sim.gravity = (0.0, 0.0, -9.8)
         self.sim.render_interval = 2
+        self.sim.use_fabric = True

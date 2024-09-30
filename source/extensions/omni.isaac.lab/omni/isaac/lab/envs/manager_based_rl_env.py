@@ -73,6 +73,7 @@ class ManagerBasedRLEnv(ManagerBasedEnv, gym.Env):
         """
         # initialize the base class to setup the scene.
         super().__init__(cfg=cfg)
+
         # store the render mode
         self.render_mode = render_mode
 
