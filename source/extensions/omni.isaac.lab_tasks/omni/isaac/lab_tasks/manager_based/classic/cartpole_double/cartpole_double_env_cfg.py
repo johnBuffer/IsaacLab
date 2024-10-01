@@ -72,7 +72,7 @@ class CommandsCfg:
 class ActionsCfg:
     """Action specifications for the MDP."""
 
-    joint_effort = mdp.JointEffortActionCfg(asset_name="robot", joint_names=["slider_to_cart"], scale=15.0)
+    joint_effort = mdp.JointEffortActionCfg(asset_name="robot", joint_names=["RailToCart"], scale=15.0)
 
 
 @configclass
@@ -111,7 +111,7 @@ class EventCfg:
         func=mdp.reset_joints_by_offset,
         mode="reset",
         params={
-            "asset_cfg": SceneEntityCfg("robot", joint_names=["slider_to_cart"]),
+            "asset_cfg": SceneEntityCfg("robot", joint_names=["RailToCart"]),
             "position_range": (-1.0, 1.0),
             "velocity_range": (-0.5, 0.5),
         },
@@ -121,7 +121,7 @@ class EventCfg:
         func=mdp.reset_joints_by_offset,
         mode="reset",
         params={
-            "asset_cfg": SceneEntityCfg("robot", joint_names=["cart_to_pole"]),
+            "asset_cfg": SceneEntityCfg("robot", joint_names=["CartToPole"]),
             #"position_range": (-math.pi * 0.25, math.pi * 0.25),
             #"position_range": (-math.pi, math.pi),
             "position_range": (math.pi, math.pi),
@@ -133,7 +133,7 @@ class EventCfg:
         func=mdp.reset_joints_by_offset,
         mode="reset",
         params={
-            "asset_cfg": SceneEntityCfg("robot", joint_names=["pole_to_double"]),
+            "asset_cfg": SceneEntityCfg("robot", joint_names=["PoleToDouble"]),
             #"position_range": (-math.pi * 0.25, math.pi * 0.25),
             #"position_range": (-math.pi, math.pi),
             "position_range": (0.0, 0.0),
@@ -154,30 +154,30 @@ class RewardsCfg:
     pole_pos = RewTerm(
         func=mdp.joint_pos_target_l2,
         weight=-20.0,
-        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["cart_to_pole"]), "target": 0.0},
+        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["CartToPole"]), "target": 0.0},
     )
     pole_pos_double = RewTerm(
         func=mdp.joint_pos_target_l2,
         weight=-20.0,
-        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["pole_to_double"]), "target": 0.0},
+        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["PoleToDouble"]), "target": 0.0},
     )
     # (4) Shaping tasks: lower cart velocity
     cart_vel = RewTerm(
         func=mdp.joint_vel_l1,
         weight=-10.0,
-        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["slider_to_cart"])},
+        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["RailToCart"])},
     )
     # (5) Shaping tasks: lower pole angular velocity
     pole_vel = RewTerm(
         func=mdp.joint_vel_l1,
         weight=-5.0,
-        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["cart_to_pole"])},
+        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["CartToPole"])},
     )
     # (6) Shaping tasks: center cart
     cart_pos = RewTerm(
         func=mdp.joint_pos_target_l2,
         weight=-5.0,
-        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["slider_to_cart"]), "target": 0.0},
+        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["RailToCart"]), "target": 0.0},
     )
 
 
@@ -190,7 +190,7 @@ class TerminationsCfg:
     # (2) Cart out of bounds
     cart_out_of_bounds = DoneTerm(
         func=mdp.joint_pos_out_of_manual_limit,
-        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["slider_to_cart"]), "bounds": (-1.24, 1.24)},
+        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["RailToCart"]), "bounds": (-1.24, 1.24)},
     )
 
 

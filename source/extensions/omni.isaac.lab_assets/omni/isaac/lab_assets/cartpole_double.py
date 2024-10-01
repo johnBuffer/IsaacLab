@@ -17,7 +17,7 @@ from omni.isaac.lab.utils.assets import ISAACLAB_NUCLEUS_DIR
 
 CARTPOLE_CFG = ArticulationCfg(
     spawn=sim_utils.UsdFileCfg(
-        usd_path="C:/Users/jeant/Documents/Pezzza/NVidia/Isaac/usd/cart_double_mesh_3.usd",
+        usd_path="C:/Users/jeant/Documents/Pezzza/NVidia/Isaac/usd/cart_double_6.usd",
         rigid_props=sim_utils.RigidBodyPropertiesCfg(
             rigid_body_enabled=True,
             max_linear_velocity=1000.0,
@@ -34,18 +34,18 @@ CARTPOLE_CFG = ArticulationCfg(
         ),
     ),
     init_state=ArticulationCfg.InitialStateCfg(
-        pos=(0.0, 0.0, 2.0), joint_pos={"slider_to_cart": 0.0, "cart_to_pole": 0.0}
+        pos=(0.0, 0.0, 2.0), joint_pos={"RailToCart": 0.0, "CartToPole": 0.0}
     ),
     actuators={
         "cart_actuator": ImplicitActuatorCfg(
-            joint_names_expr=["slider_to_cart"],
+            joint_names_expr=["RailToCart"],
             effort_limit=400.0,
             velocity_limit=100.0,
             stiffness=0.0,
             damping=10.0,
         ),
         "pole_actuator": ImplicitActuatorCfg(
-            joint_names_expr=["cart_to_pole"], effort_limit=400.0, velocity_limit=100.0, stiffness=0.0, damping=0.0
+            joint_names_expr=["CartToPole"], effort_limit=400.0, velocity_limit=100.0, stiffness=0.0, damping=0.0
         ),
     },
 )
