@@ -191,18 +191,18 @@ class RewardsCfg:
     """Reward terms for the MDP."""
 
     # (1) Constant running reward
-    alive = RewTerm(func=mdp.is_alive, weight=250.0)
+    alive = RewTerm(func=mdp.is_alive, weight=200.0)
     # (2) Failure penalty
     terminating = RewTerm(func=mdp.is_terminated, weight=-800.0)
     # (3) Primary task: keep pole upright
     pole_pos = RewTerm(
         func=mdp.joint_pos_target_l2,
-        weight=-30.0,
+        weight=-20.0,
         params={"asset_cfg": SceneEntityCfg("robot", joint_names=["CartToPole"]), "target": 0.0},
     )
     pole_pos_double = RewTerm(
         func=mdp.joint_pos_target_l2,
-        weight=-30.0,
+        weight=-20.0,
         params={"asset_cfg": SceneEntityCfg("robot", joint_names=["PoleToDouble"]), "target": 0.0},
     )
     # (4) Shaping tasks: lower cart velocity
@@ -217,6 +217,12 @@ class RewardsCfg:
         weight=-10.0,
         params={"asset_cfg": SceneEntityCfg("robot", joint_names=["CartToPole"])},
     )
+    # (5) Shaping tasks: lower pole angular velocity
+    """pole_double_vel = RewTerm(
+        func=mdp.joint_vel_l1,
+        weight=-10.0,
+        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["PoleToDouble"])},
+    )"""
     # (6) Shaping tasks: center cart
     cart_pos = RewTerm(
         func=mdp.joint_pos_target_l2,
